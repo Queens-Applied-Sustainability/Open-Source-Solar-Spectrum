@@ -1,10 +1,14 @@
 /*
  * Control the stepper motors of the Open Source Solar Spectrum
+ * 
+ * Calculates the zenith to know exactly where to move the shaddow band
+ * The other stepper rotatest the spectrometer 90 degrees in 10 degree increments.
  * https://github.com/Queens-Applied-Sustainability/Open-Source-Solar-Spectrum
+ * http://www.appropedia.org/Open_source_solar_spectrum_project
  * 
  * Based on code originally written by Matthew De Vuono
  */
- 
+
 ///////////// INSTALLATION-SPECIFIC CONSTANTS
 #define LATITUDE 43.0  
 #define LONGITUDE 76.3
@@ -18,12 +22,6 @@
 #include <Wire.h>
 #include <AFMotor.h>   // http://www.ladyada.net/make/mshield/download.html
 #include <Chronodot.h> // http://planetstephanie.net/2011/04/09/chronodot-library-for-arduino/
-
-
-//this code merges the zenith calculations with the stepper motion in
-//order to get the stepper to move the shadowband to the correct zenith based on the 
-//results from the code. The steppers will move in 10 degree increments to 90degrees.
-//includes code to initialize the position of the stepper motor for location calibration.
 
 
 Chronodot RTC; // Real-time Clock
@@ -60,7 +58,7 @@ void loop() {
   int time = now.minute();
 
   if(time = 00) {
-  //the instances for the program to run, in this case every minute
+    //the instances for the program to run, in this case every minute
     scratch(now);
   }
   optic_motor.release();
@@ -68,7 +66,7 @@ void loop() {
 }
 
 void scratch(DateTime &now) {
- // initialize motors
+  // initialize motors
   if (button_state == LOW) {     
     // move motor 
     optic_motor.step(1, FORWARD, SINGLE); 
@@ -132,3 +130,4 @@ void scratch(DateTime &now) {
   optic_motor.step(50, BACKWARD, DOUBLE);
   band_motor.step(angle, BACKWARD, DOUBLE);
 }
+
