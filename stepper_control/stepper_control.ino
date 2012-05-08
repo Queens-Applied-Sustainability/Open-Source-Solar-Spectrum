@@ -1,6 +1,9 @@
-//zenith stepper driver motion
-//Matthew De Vuono
-//May 24-2011
+/*
+ * Control the stepper motors of the Open Source Solar Spectrum
+ * https://github.com/Queens-Applied-Sustainability/Open-Source-Solar-Spectrum
+ * 
+ * Based on code originally written by Matthew De Vuono
+ */
 
 
 //this code merges the zenith calculations with the stepper motion in
@@ -8,9 +11,9 @@
 //results from the code. The steppers will move in 10 degree increments to 90degrees.
 //includes code to initialize the position of the stepper motor for location calibration.
 
-#include <AFMotor.h>
 #include <Wire.h>
-#include "Chronodot.h"
+#include <AFMotor.h>     // http://www.ladyada.net/make/mshield/download.html
+#include "Chronodot.h"   // I (phil) found this here: https://github.com/radekw/Arduino/tree/master/Libraries/Chronodot
 
 Chronodot RTC;
 
