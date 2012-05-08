@@ -13,7 +13,7 @@
 
 #include <Wire.h>
 #include <AFMotor.h>     // http://www.ladyada.net/make/mshield/download.html
-#include <Chronodot.h>   // I (phil) found this here: https://github.com/radekw/Arduino/tree/master/Libraries/Chronodot
+#include <Chronodot.h>   // http://planetstephanie.net/2011/04/09/chronodot-library-for-arduino/
 
 Chronodot RTC;
 

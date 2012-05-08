@@ -12,7 +12,9 @@ Making it Go
 You'll need some libraries.
 
 * AFMotor: http://www.ladyada.net/make/mshield/download.html
-* Chronodot: https://github.com/radekw/Arduino/tree/master/Libraries/Chronodot
+* Chronodot: http://planetstephanie.net/2011/04/09/chronodot-library-for-arduino/
+
+They have also been included in this project for convenience.
 
 For a refresher on how to install them, take a look at the Contributed Libraries section of http://arduino.cc/it/Reference/Libraries.
 
