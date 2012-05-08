@@ -34,12 +34,14 @@ long previousMillis = 0;      // will store last time LED was updated
 
 
 //array to hold the values to find day of year
-int month_day_of_year[13] = {
-  0,0,31,59,90,120,151,181,212,243,273,304,334}; 
+int month_day_of_year[13] = {0,0,31,59,90,120,151,181,212,243,273,304,334};
+
 float phi;    //initialize latitude in radians
+
 int button_state = 0;
 
 void scratch(DateTime &now);
+void takeSpecReadings();
 
 void setup() {
   // initialize serial output
@@ -65,12 +67,24 @@ void loop() {
   band_motor.release();
 }
 
+
+void takeSpecReadings() {
+  for(int i=0; i<10; i++) { 
+    optic_motor.step(5, FORWARD, DOUBLE);
+    delay(5000);
+    digitalWrite(SPEC_TRIGGER, HIGH);   // set the spectrometer on
+    delay(250);              // wait for a moment
+    digitalWrite(SPEC_TRIGGER, LOW);
+    delay(2000);
+  }
+}
+
 void scratch(DateTime &now) {
   // initialize motors
   if (button_state == LOW) {     
     // move motor 
     optic_motor.step(1, FORWARD, SINGLE); 
-    band_motor.step(1, FORWARD, SINGLE);  
+    band_motor.step(1, FORWARD, SINGLE);
   }
 
   //run sensing program
@@ -119,14 +133,7 @@ void scratch(DateTime &now) {
 
   band_motor.step(angle, FORWARD, DOUBLE);
   delay(5000);
-  for(int i=0; i<10; i++) { 
-    optic_motor.step(5, FORWARD, DOUBLE);
-    delay(5000);
-    digitalWrite(SPEC_TRIGGER, HIGH);   // set the spectrometer on
-    delay(250);              // wait for a moment
-    digitalWrite(SPEC_TRIGGER, LOW);
-    delay(2000);
-  }
+  takeSpecReadings();
   optic_motor.step(50, BACKWARD, DOUBLE);
   band_motor.step(angle, BACKWARD, DOUBLE);
 }
