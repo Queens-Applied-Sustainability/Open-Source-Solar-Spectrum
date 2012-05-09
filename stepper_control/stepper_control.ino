@@ -16,7 +16,6 @@
 
 // Global Constants
 #define SPEC_TRIGGER 13 // output pin to trigger a spectrometer reading
-#define BUTTON 2
 
 // External Libraries
 #include <Wire.h>
@@ -38,68 +37,59 @@ int month_day_of_year[13] = {0,0,31,59,90,120,151,181,212,243,273,304,334};
 
 float phi;    //initialize latitude in radians
 
-int button_state = 0;
-
-void scratch(DateTime &now);
+void sense(DateTime &now, boolean with_shadow);
+int calculateAngle(DateTime &now);
+void bar(int angle, uint8_t dir);
 void takeSpecReadings();
+
+DateTime now;
+int lastminute, time = 1;
 
 void setup() {
   // initialize serial output
   Serial.begin(9600);
   Wire.begin();
   RTC.begin();
+  RTC.adjust(DateTime(__DATE__, __TIME__));  // set RTC to time of sketch compile/upload (MAKE SURE YOUR COMPUTER'S TIME IS RIGHT)
   optic_motor.setSpeed(10);  // 10 rpm 
   band_motor.setSpeed(10);  // 10 rpm  
   pinMode(SPEC_TRIGGER, OUTPUT);
-  button_state = digitalRead(BUTTON);
-  pinMode(BUTTON, INPUT);
+  Serial.println("Ready to go!");
+  Serial.print("unix time: ");
+  Serial.println(RTC.now().unixtime());
 }
 
 void loop() {
-  DateTime now = RTC.now();
-  int time = now.minute();
-
-  if(time = 00) {
-    //the instances for the program to run, in this case every minute
-    scratch(now);
-  }
+  
+  Serial.print ("Waiting until minute 0: ");
+  do {
+    do {
+      lastminute = time;
+      now = RTC.now();
+      time = now.second();  // TIP: change to now.second for faster debuggingin (run once/minute instead of once/o
+    } while(lastminute == time); // Wait for the minute to change
+    
+    Serial.print(" ");
+    Serial.print(time);
+  } while (time != 0);  // Wait for minute 0 (once / hour)
+  Serial.println();
+  
+  Serial.println("Reading spectrometer.");
+  takeSpecReadings();
+  
+  Serial.println("Reading spectrometer with shadow bar (");
+  int angle = calculateAngle(now);
+  Serial.print(angle);
+  Serial.println(" degrees).");
+  band_motor.step(angle<0? -angle:angle, FORWARD, DOUBLE);
+  takeSpecReadings();
+  band_motor.step(angle<0? -angle:angle, BACKWARD, DOUBLE);
+  
   optic_motor.release();
   band_motor.release();
 }
 
-
-void takeSpecReadings() {
-  for(int i=0; i<10; i++) { 
-    optic_motor.step(5, FORWARD, DOUBLE);
-    delay(5000);
-    digitalWrite(SPEC_TRIGGER, HIGH);   // set the spectrometer on
-    delay(250);              // wait for a moment
-    digitalWrite(SPEC_TRIGGER, LOW);
-    delay(2000);
-  }
-}
-
-void scratch(DateTime &now) {
-  // initialize motors
-  if (button_state == LOW) {     
-    // move motor 
-    optic_motor.step(1, FORWARD, SINGLE); 
-    band_motor.step(1, FORWARD, SINGLE);
-  }
-
-  //run sensing program
-  for(int i=0; i<10; i=i++) {
-    optic_motor.step(5, FORWARD, DOUBLE);
-    delay(5000);
-    digitalWrite(SPEC_TRIGGER, HIGH);   // set the spectrometer on
-    delay(250);              // wait for a moment
-    digitalWrite(SPEC_TRIGGER, LOW);
-    delay(2000);
-  }
-  optic_motor.step(50, BACKWARD, DOUBLE);
-
-  //check and import clock values from rtc clock
-
+int calculateAngle(DateTime &now) {
   int hour = now.hour();          //from clock
   int day = now.day();        //from clock
   int month = now.month();      //from clock
@@ -129,12 +119,22 @@ void scratch(DateTime &now) {
 
 
   float result = ((90-zenith)/1.8);
-  int angle = result;
+  return result;
+}
 
-  band_motor.step(angle, FORWARD, DOUBLE);
-  delay(5000);
-  takeSpecReadings();
+void takeSpecReadings() {
+  Serial.print("Angle:");
+  for(int i=0; i<10; i++) { 
+    Serial.print(" ");
+    Serial.print(i);
+    optic_motor.step(5, FORWARD, DOUBLE);
+    delay(5000);
+    digitalWrite(SPEC_TRIGGER, HIGH);   // set the spectrometer on
+    delay(250);              // wait for a moment
+    digitalWrite(SPEC_TRIGGER, LOW);
+    delay(2000);
+  }
   optic_motor.step(50, BACKWARD, DOUBLE);
-  band_motor.step(angle, BACKWARD, DOUBLE);
+  Serial.println();
 }
 
