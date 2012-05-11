@@ -9,20 +9,16 @@
  * Based on code originally written by Matthew De Vuono
  */
 
-///////////// INSTALLATION-SPECIFIC CONSTANTS
-#define LATITUDE 43.0  
-#define LONGITUDE 76.3
-#define MERIDIAN 75.0
-
-// Global Constants
-#define SPEC_TRIGGER 13 // output pin to trigger a spectrometer reading
-#define BUTTON 2
+///////////// INSTALLATION-SPECIFIC CONSTANT!
+#define LATITUDE 45.0
 
 // External Libraries
 #include <Wire.h>
 #include <AFMotor.h>   // http://www.ladyada.net/make/mshield/download.html
 #include <Chronodot.h> // http://planetstephanie.net/2011/04/09/chronodot-library-for-arduino/
 
+// Global Constants
+#define SPEC_TRIGGER 13 // output pin to trigger a spectrometer reading
 
 Chronodot RTC; // Real-time Clock
 
@@ -34,61 +30,79 @@ long previousMillis = 0;      // will store last time LED was updated
 
 
 //array to hold the values to find day of year
-int month_day_of_year[13] = {0,0,31,59,90,120,151,181,212,243,273,304,334};
+const int DAYS_OF_MONTHS[12] = {0,31,59,90,120,151,181,212,243,273,304,334};
 
-float phi;    //initialize latitude in radians
-
-int button_state = 0;
-
-void scratch(DateTime &now);
+void sense(DateTime &now, boolean with_shadow);
+float angleFromHorizon(DateTime &now);
+void bar(int angle, uint8_t dir);
 void takeSpecReadings();
 
+DateTime now;
+int lastminute, time = 1;
+
 void setup() {
-  // initialize serial output
-  Serial.begin(9600);
-  Wire.begin();
-  RTC.begin();
-  optic_motor.setSpeed(10);  // 10 rpm 
-  band_motor.setSpeed(10);  // 10 rpm  
   pinMode(SPEC_TRIGGER, OUTPUT);
-  button_state = digitalRead(BUTTON);
-  pinMode(BUTTON, INPUT);
+  Serial.begin(9600);
+  Wire.begin();  // needed for motor drivers
+  optic_motor.setSpeed(10);  // 10 rpm 
+  band_motor.setSpeed(10);  // 10 rpm 
+  RTC.begin();
+  // Uncomment the following line to reset the RTC to the uploading computer's time.
+  // RTC.adjust(DateTime(__DATE__, __TIME__));
+  
+  Serial.println("Ready to go!");
 }
 
 void loop() {
-  DateTime now = RTC.now();
-  int time = now.minute();
-
-  if(time = 00) {
-    //the instances for the program to run, in this case every minute
-    scratch(now);
-  }
+  
+  Serial.print ("Waiting until minute 0: ");
+  do {
+    do {
+      lastminute = time;
+      now = RTC.now();
+      time = now.second();  // TIP: change to now.second for faster debuggingin (run once/minute instead of once/o
+    } while(lastminute == time); // Wait for the minute to change
+    
+    Serial.print(" ");
+    Serial.print(time);
+  } while (time != 0);  // Wait for minute 0 (once / hour)
+  Serial.println();
+  
+  Serial.println("Reading spectrometer.");
+  takeSpecReadings();
+  
+  Serial.println("Reading spectrometer with shadow bar (");
+  float angle = angleFromHorizon(now);
+  int steps = abs(angle/1.8);
+  Serial.print(angle);
+  Serial.println(" degrees).");
+  band_motor.step(steps, FORWARD, DOUBLE);
+  takeSpecReadings();
+  band_motor.step(steps, BACKWARD, DOUBLE);
+  
   optic_motor.release();
   band_motor.release();
 }
 
+float angleFromHorizon(DateTime &now) {
+  int day_of_year = DAYS_OF_MONTHS[now.month()-1] + now.day(); // does not accoutnt for leap-years
+
+  // Equation 1.6.1 Solar Engineering of Thermal Processes
+  float declination = 0.40928 * sin(2*PI * (284+day_of_year)/365);
+  
+  // Equation 1.6.5. Note the missing cos(Beta) -- we're assuming solar noon.
+  float zenith = acos(cos(LATITUDE*PI/180)*cos(declination) +
+                      sin(LATITUDE*PI/180)*sin(declination));
+  
+  // Convert to degrees from horizon (so not really the zenith at all)
+  return 90 - (zenith*180/PI);
+}
 
 void takeSpecReadings() {
+  Serial.print("Angle #");
   for(int i=0; i<10; i++) { 
-    optic_motor.step(5, FORWARD, DOUBLE);
-    delay(5000);
-    digitalWrite(SPEC_TRIGGER, HIGH);   // set the spectrometer on
-    delay(250);              // wait for a moment
-    digitalWrite(SPEC_TRIGGER, LOW);
-    delay(2000);
-  }
-}
-
-void scratch(DateTime &now) {
-  // initialize motors
-  if (button_state == LOW) {     
-    // move motor 
-    optic_motor.step(1, FORWARD, SINGLE); 
-    band_motor.step(1, FORWARD, SINGLE);
-  }
-
-  //run sensing program
-  for(int i=0; i<10; i=i++) {
+    Serial.print(" ");
+    Serial.print(i);
     optic_motor.step(5, FORWARD, DOUBLE);
     delay(5000);
     digitalWrite(SPEC_TRIGGER, HIGH);   // set the spectrometer on
@@ -97,44 +111,5 @@ void scratch(DateTime &now) {
     delay(2000);
   }
   optic_motor.step(50, BACKWARD, DOUBLE);
-
-  //check and import clock values from rtc clock
-
-  int hour = now.hour();          //from clock
-  int day = now.day();        //from clock
-  int month = now.month();      //from clock
-
-  //calculating the day of year
-  int day_of_year = month_day_of_year[month] + day;
-
-  //declination calculations
-  float ratio = (284.0+day_of_year)/365*360;
-  float ratio_rad = ratio*PI/180.0;
-  float dec_deg = 23.45*sin(ratio_rad);
-  float dec = dec_deg*PI/180;
-
-  //calculating solar time
-  int Bdeg = (day_of_year-1)*(360/365);
-  float B = Bdeg*PI/180;          //dividing E by 60 gives it in a fraction of an hour
-  float E = (229.2*(0.000075+0.001868*cos(B)-0.032077*sin(B)-0.014615*cos(2*B)-0.04089*sin(2*B)))/60;
-  float solartime = hour + 4*(MERIDIAN-LONGITUDE)/60+E;
-
-  //solar hour calculation
-  float omega_degrees=(solartime-12)*15;
-  float omega_rad =omega_degrees*PI/180;
-
-  //Zeith calculation in radians
-  float zenith =cos(phi)*cos(dec)*cos(omega_rad)+sin(phi)*sin(dec);
-  zenith = (acos(zenith))*180/PI;
-
-
-  float result = ((90-zenith)/1.8);
-  int angle = result;
-
-  band_motor.step(angle, FORWARD, DOUBLE);
-  delay(5000);
-  takeSpecReadings();
-  optic_motor.step(50, BACKWARD, DOUBLE);
-  band_motor.step(angle, BACKWARD, DOUBLE);
+  Serial.println();
 }
-
