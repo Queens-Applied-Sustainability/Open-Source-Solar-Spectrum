@@ -18,7 +18,7 @@
 #include <Chronodot.h> // http://planetstephanie.net/2011/04/09/chronodot-library-for-arduino/
 
 // Global Constants
-#define SPEC_TRIGGER 13 // output pin to trigger a spectrometer reading
+#define SPEC_TRIGGER 2 // output pin to trigger a spectrometer reading
 
 AF_Stepper optic_motor(200, 1);  // M1 and M2 on the motor driving sheild
 AF_Stepper band_motor(200, 2);   // M3 and M4
@@ -87,13 +87,13 @@ void takeSpecReadings() {
   Serial.print("Angle #");
   for(int i=0; i<10; i++) { 
     Serial.print(" "); Serial.print(i);
-    optic_motor.step(5, FORWARD, DOUBLE);
+    optic_motor.step(5, BACKWARD, DOUBLE);
     delay(5000);
     digitalWrite(SPEC_TRIGGER, HIGH); // set the spectrometer on
     delay(250);                       // wait for a moment
     digitalWrite(SPEC_TRIGGER, LOW);
     delay(2000);
   }
-  optic_motor.step(50, BACKWARD, DOUBLE);
+  optic_motor.step(50, FORWARD, DOUBLE);
   Serial.println();
 }
