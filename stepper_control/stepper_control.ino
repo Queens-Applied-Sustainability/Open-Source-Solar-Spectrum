@@ -11,6 +11,7 @@
 
 ///////////// INSTALLATION-SPECIFIC CONSTANT!
 #define LATITUDE 44.2224 // 44.2224 = St. Lawrence College
+#define DEBUG false // set to true for easier debugging, but make sure it's false for production!
 
 // External Libraries
 #include <Wire.h>
@@ -54,7 +55,7 @@ void loop() {
     do {
       lastminute = time;
       now = RTC.now();
-      time = now.second();  // TIP: change to now.second for faster debugging (run once/minute instead of once/hour)
+      time = DEBUG ? now.second() : now.minute();  // Show info and take readings for seconds and minutes when debugging (instead of minutes and hours when running)
     } while(lastminute == time); // Wait for the minute to change
     Serial.print(" "); Serial.print(time);
   } while (time != 0);  // Wait for minute 0 (once / hour)
