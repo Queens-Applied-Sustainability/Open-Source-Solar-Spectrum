@@ -54,7 +54,7 @@ void loop() {
     do {
       lastminute = time;
       now = RTC.now();
-      time = now.second();  // TIP: change to now.second for faster debuggingin (run once/minute instead of once/o
+      time = now.second();  // TIP: change to now.second for faster debugging (run once/minute instead of once/hour)
     } while(lastminute == time); // Wait for the minute to change
     Serial.print(" "); Serial.print(time);
   } while (time != 0);  // Wait for minute 0 (once / hour)
@@ -75,11 +75,11 @@ void loop() {
 }
 
 float angleFromHorizon(DateTime &now) {
-  int day_of_year = DAYS_OF_MONTHS[now.month()-1] + now.day();     // does not accoutnt for leap-years
+  int day_of_year = DAYS_OF_MONTHS[now.month()-1] + now.day();     // does not account for leap-years
   float declination = 0.40928 * sin(2*PI * (284+day_of_year)/365); // Equation 1.6.1 Solar Engineering of Thermal Processes
   // Equation 1.6.5. Note the missing cos(Beta) -- we're assuming solar noon.
   float incidence = acos(cos(LATITUDE*PI/180)*cos(declination) +
-                         sin(LATITUDE*PI/180)*sin(declination));      // Convert to degrees from horizon (so not really the zenith at all)
+                         sin(LATITUDE*PI/180)*sin(declination));
   return incidence*180/PI;
 }
 
