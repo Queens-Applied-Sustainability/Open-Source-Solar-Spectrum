@@ -10,7 +10,7 @@
  */
 
 ///////////// INSTALLATION-SPECIFIC CONSTANT!
-#define LATITUDE 45.0
+#define LATITUDE 44.2224 // 44.2224 = St. Lawrence College
 
 // External Libraries
 #include <Wire.h>
@@ -78,9 +78,9 @@ float angleFromHorizon(DateTime &now) {
   int day_of_year = DAYS_OF_MONTHS[now.month()-1] + now.day();     // does not accoutnt for leap-years
   float declination = 0.40928 * sin(2*PI * (284+day_of_year)/365); // Equation 1.6.1 Solar Engineering of Thermal Processes
   // Equation 1.6.5. Note the missing cos(Beta) -- we're assuming solar noon.
-  float zenith = acos(cos(LATITUDE*PI/180)*cos(declination) +
-                      sin(LATITUDE*PI/180)*sin(declination));      // Convert to degrees from horizon (so not really the zenith at all)
-  return 90 - (zenith*180/PI);
+  float incidence = acos(cos(LATITUDE*PI/180)*cos(declination) +
+                         sin(LATITUDE*PI/180)*sin(declination));      // Convert to degrees from horizon (so not really the zenith at all)
+  return incidence*180/PI;
 }
 
 void takeSpecReadings() {
