@@ -76,10 +76,16 @@ void loop() {
 }
 
 float angleFromHorizon(DateTime &now) {
-  int day_of_year = DAYS_OF_MONTHS[now.month()-1] + now.day();     // does not account for leap-years
+  int day_of_year = DAYS_OF_MONTHS[now.month()-1] + now.day();     // does not account for leap-years]
+  int B=(day_of_year-1)*(360/365);
+  int E=(229.2*(0.000075+0.001868*cos(B)-0.032077*sin(B)-0.014615*cos(2*B)-0.04089*sin(2*B)))/60; //eccentricity factor
+  int meridian=75; //nearest prime merdian defining the time zone modify for a specific location
+  int longitude=76.3; //modify for a specific location
+  int solartime=(now.hour()+now.min()/60)+4*(meridian-longitude)/60+E; //correct assuming the clock does not account for daylight savings 
+  int hourangle=(solartime-12)*15; //calculates the hour angle based on solar time 
   float declination = 0.40928 * sin(2*PI * (284+day_of_year)/365); // Equation 1.6.1 Solar Engineering of Thermal Processes
-  // Equation 1.6.5. Note the missing cos(Beta) -- we're assuming solar noon.
-  float incidence = acos(cos(LATITUDE*PI/180)*cos(declination) +
+  // Equation 1.6.5
+  float incidence = asin(cos(LATITUDE*PI/180)*cos(declination)*cos(hourangle) +
                          sin(LATITUDE*PI/180)*sin(declination));
   return incidence*180/PI;
 }
