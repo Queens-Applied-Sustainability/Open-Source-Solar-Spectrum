@@ -88,6 +88,12 @@ float angleFromHorizon(DateTime &now) {
   float incidence = asin(cos(LATITUDE*PI/180)*cos(declination)*cos(hourangle) +
                          sin(LATITUDE*PI/180)*sin(declination));
   if (DEBUG) {
+    Serial.print("  y: "); Serial.print(now.year());
+      Serial.print(" m: "); Serial.print(now.month());
+      Serial.print(" d: "); Serial.print(now.day());
+      Serial.print(" h: "); Serial.print(now.hour());
+      Serial.print(" m: "); Serial.print(now.minute());
+      Serial.print(" s: "); Serial.println(now.second());
     Serial.print("  day of year: "); Serial.println(day_of_year);
     Serial.print("  B: "); Serial.println(B);
     Serial.print("  E: "); Serial.println(E);
