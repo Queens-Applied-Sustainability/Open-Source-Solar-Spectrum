@@ -50,7 +50,7 @@ void setup() {
 
 void loop() {
   
-  Serial.print ("Waiting until minute 0: ");
+  Serial.print("Waiting until minute 0: ");
   do {
     do {
       lastminute = time;
@@ -64,7 +64,7 @@ void loop() {
   Serial.println("Reading spectrometer.");
   takeSpecReadings();
   
-  Serial.println("Reading spectrometer with shadow bar (");
+  Serial.print("Reading spectrometer with shadow bar (");
   float angle = angleFromHorizon(now);
   Serial.print(angle); Serial.println(" degrees).");
   band_motor.step(abs(angle/1.8), FORWARD, DOUBLE);
@@ -87,6 +87,17 @@ float angleFromHorizon(DateTime &now) {
   // Equation 1.6.5
   float incidence = asin(cos(LATITUDE*PI/180)*cos(declination)*cos(hourangle) +
                          sin(LATITUDE*PI/180)*sin(declination));
+  if (DEBUG) {
+    Serial.print("  day of year: "); Serial.println(day_of_year);
+    Serial.print("  B: "); Serial.println(B);
+    Serial.print("  E: "); Serial.println(E);
+    Serial.print("  meridian: "); Serial.println(meridian);
+    Serial.print("  longitude: "); Serial.println(longitude);
+    Serial.print("  solartime: "); Serial.println(solartime);
+    Serial.print("  hourangle: "); Serial.println(hourangle);
+    Serial.print("  declination: "); Serial.println(declination);
+    Serial.print("  incidence: "); Serial.println(incidence);
+  }
   return incidence*180/PI;
 }
 
