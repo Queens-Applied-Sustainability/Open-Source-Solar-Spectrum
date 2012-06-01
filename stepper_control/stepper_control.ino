@@ -11,6 +11,8 @@
 
 ///////////// INSTALLATION-SPECIFIC CONSTANT!
 #define LATITUDE 44.2224 // 44.2224 = St. Lawrence College
+#define MERIDIAN 75 // nearest prime merdian defining the time zone modify for a specific location
+#define LONGITUDE 76.3 // modify for a specific location
 #define DEBUG false // set to true for easier debugging, but make sure it's false for production!
 
 // External Libraries
@@ -77,12 +79,10 @@ void loop() {
 
 float angleFromHorizon(DateTime &now) {
   int day_of_year = DAYS_OF_MONTHS[now.month()-1] + now.day();     // does not account for leap-years]
-  int B=(day_of_year-1)*(360/365);
-  int E=(229.2*(0.000075+0.001868*cos(B)-0.032077*sin(B)-0.014615*cos(2*B)-0.04089*sin(2*B)))/60; //eccentricity factor
-  int meridian=75; //nearest prime merdian defining the time zone modify for a specific location
-  int longitude=76.3; //modify for a specific location
-  int solartime=(now.hour()+now.minute()/60)+4*(meridian-longitude)/60+E; //correct assuming the clock does not account for daylight savings 
-  int hourangle=(solartime-12)*15; //calculates the hour angle based on solar time 
+  int B = (day_of_year-1)*(360/365);
+  int E = (229.2*(0.000075+0.001868*cos(B)-0.032077*sin(B)-0.014615*cos(2*B)-0.04089*sin(2*B)))/60; //eccentricity factor
+  int solartime = (now.hour()+now.minute()/60) + 4*(MERIDIAN-LONGITUDE)/60 + E; //correct assuming the clock does not account for daylight savings 
+  int hourangle = (solartime-12)*15; //calculates the hour angle based on solar time 
   float declination = 0.40928 * sin(2*PI * (284+day_of_year)/365); // Equation 1.6.1 Solar Engineering of Thermal Processes
   // Equation 1.6.5
   float incidence = asin(cos(LATITUDE*PI/180)*cos(declination)*cos(hourangle) +
@@ -97,8 +97,8 @@ float angleFromHorizon(DateTime &now) {
     Serial.print("  day of year: "); Serial.println(day_of_year);
     Serial.print("  B: "); Serial.println(B);
     Serial.print("  E: "); Serial.println(E);
-    Serial.print("  meridian: "); Serial.println(meridian);
-    Serial.print("  longitude: "); Serial.println(longitude);
+    Serial.print("  meridian: "); Serial.println(MERIDIAN);
+    Serial.print("  longitude: "); Serial.println(LONGITUDE);
     Serial.print("  solartime: "); Serial.println(solartime);
     Serial.print("  hourangle: "); Serial.println(hourangle);
     Serial.print("  declination: "); Serial.println(declination);
