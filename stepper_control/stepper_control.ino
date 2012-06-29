@@ -13,7 +13,7 @@
 #define LATITUDE 44.2224 // 44.2224 = St. Lawrence College
 #define MERIDIAN 75 // nearest prime merdian defining the time zone modify for a specific location
 #define LONGITUDE 76.3 // modify for a specific location
-#define DEBUG false // set to true for easier debugging, but make sure it's false for production!
+#define DEBUG 0 // set to 0 for production. Other numbers will set the number of minutes between readings.
 
 // External Libraries
 #include <Wire.h>
@@ -57,7 +57,7 @@ void loop() {
     do {
       lastminute = time;
       now = RTC.now();
-      time = DEBUG ? now.second() : now.minute();  // Show info and take readings for seconds and minutes when debugging (instead of minutes and hours when running)
+      time = DEBUG ? (now.minute() % DEBUG) : now.minute();  // Show info and take readings for seconds and minutes when debugging (instead of minutes and hours when running)
     } while(lastminute == time); // Wait for the minute to change
     Serial.print(" "); Serial.print(time);
   } while (time != 0);  // Wait for minute 0 (once / hour)
