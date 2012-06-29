@@ -80,7 +80,7 @@ void loop() {
     band_motor.release();
   
   } else {
-    Serial.print("Sun is not up; not reading")
+    Serial.print("Sun is not up; not reading");
   }
 }
 
