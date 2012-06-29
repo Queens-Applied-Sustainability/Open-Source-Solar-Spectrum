@@ -63,18 +63,25 @@ void loop() {
   } while (time != 0);  // Wait for minute 0 (once / hour)
   Serial.println();
   
-  Serial.println("Reading spectrometer.");
-  takeSpecReadings();
+  angle = angleFromHorizon(now);
+  if (angle > 0) {
+    
+    Serial.println("Reading spectrometer.");
+    takeSpecReadings();
+    
+    Serial.print("Reading spectrometer with shadow bar (");
+    float angle = angleFromHorizon(now);
+    Serial.print(angle); Serial.println(" degrees).");
+    band_motor.step(abs(angle/1.8), FORWARD, DOUBLE);
+    takeSpecReadings();
+    band_motor.step(abs(angle/1.8), BACKWARD, DOUBLE);
+    
+    //optic_motor.release();
+    band_motor.release();
   
-  Serial.print("Reading spectrometer with shadow bar (");
-  float angle = angleFromHorizon(now);
-  Serial.print(angle); Serial.println(" degrees).");
-  band_motor.step(abs(angle/1.8), FORWARD, DOUBLE);
-  takeSpecReadings();
-  band_motor.step(abs(angle/1.8), BACKWARD, DOUBLE);
-  
-  //optic_motor.release();
-  band_motor.release();
+  } else {
+    Serial.print("Sun is not up; not reading")
+  }
 }
 
 float angleFromHorizon(DateTime &now) {
