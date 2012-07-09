@@ -63,7 +63,7 @@ void loop() {
   } while (time != 0);  // Wait for minute 0 (once / hour)
   Serial.println();
   
-  angle = angleFromHorizon(now);
+  float angle = angleFromHorizon(now);
   if (angle > 0) {
     
     Serial.println("Reading spectrometer.");
