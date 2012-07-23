@@ -44,10 +44,41 @@ void setup() {
   band_motor.setSpeed(10);  // 10 rpm 
   RTC.begin();
   
-  // Uncomment the following line to reset the RTC to the uploading computer's time.
+  /*
+   * How to fix the RTC time (check by opening the Serial monitor -- it will print
+   * the time it thinks it is when it starts).
+   * 
+   *  1. Uncomment the line after this comment (starts with RTC.adjust)
+   *  2. Upload sketch
+   *  3. Wait at least 30 seconds (Do not open serial monitor!)
+   *  4. Re-comment the RTC.adjust line (Important!)
+   *  5. Save and re-upload.
+   * 
+   * Now you can open up the serial monitor and verify that it has the correct
+   * time.
+   * 
+   * Note that the line below for resetting the clock will hard-code the time when
+   * the sketch is compiled, and set the clock to that. So if you don't re-comment
+   * it, the arduino will reset the RTC back to the time the sketch was compiled
+   * every time it starts up!
+   */
   // RTC.adjust(DateTime(__DATE__, __TIME__));
   
   Serial.println("Ready to go!");
+  Serial.print("Startup time: ");
+  now = RTC.now();
+  Serial.print(now.year());
+  Serial.print("/");
+  Serial.print(now.month());
+  Serial.print("/");
+  Serial.print(now.day());
+  Serial.print("; ");
+  Serial.print(now.hour());
+  Serial.print(":");
+  Serial.print(now.minute());
+  Serial.print(":");
+  Serial.print(now.second());
+  Serial.println(".");
 }
 
 void loop() {
@@ -80,7 +111,9 @@ void loop() {
     band_motor.release();
   
   } else {
-    Serial.print("Sun is not up; not reading");
+    Serial.print("Sun is not up; not reading (angle: ");
+    Serial.print(angle);
+    Serial.println("degrees).");
   }
 }
 
