@@ -11,8 +11,8 @@
 
 ///////////// INSTALLATION-SPECIFIC CONSTANT!
 #define LATITUDE 44.2224 // 44.2224 = St. Lawrence College
-#define MERIDIAN 75 // nearest prime merdian defining the time zone modify for a specific location
-#define LONGITUDE 76.3 // modify for a specific location
+#define MERIDIAN 284 // nearest prime merdian defining the time zone modify for a specific location
+#define LONGITUDE 283.7 // 283.7 = St. Lawrence College    
 #define DEBUG 0 // set to 0 for production. Other numbers will set the number of minutes between readings.
 
 // External Libraries
@@ -67,23 +67,19 @@ void setup() {
   Serial.println("Ready to go!");
   Serial.print("Startup time: ");
   now = RTC.now();
-  Serial.print(now.year());
-  Serial.print("/");
-  Serial.print(now.month());
-  Serial.print("/");
-  Serial.print(now.day());
-  Serial.print("; ");
-  Serial.print(now.hour());
-  Serial.print(":");
-  Serial.print(now.minute());
-  Serial.print(":");
-  Serial.print(now.second());
-  Serial.println(".");
+  Serial.print(now.year()); Serial.print("/");
+  Serial.print(now.month()); Serial.print("/");
+  Serial.print(now.day()); Serial.print("; ");
+  Serial.print(now.hour()); Serial.print(":");
+  Serial.print(now.minute()); Serial.print(":");
+  Serial.print(now.second()); Serial.println(".");
 }
 
 void loop() {
   
-  Serial.print("Waiting until minute 0: ");
+  now = RTC.now();
+  Serial.print(now.year()); Serial.print("/"); Serial.print(now.month()); Serial.print("/"); Serial.print(now.day()); Serial.print(", ");
+  Serial.print(now.hour()); Serial.print(":");
   do {
     do {
       lastminute = time;
@@ -97,7 +93,8 @@ void loop() {
   float angle = angleFromHorizon(now);
   if (angle > 0) {
     
-    Serial.println("Reading spectrometer.");
+    Serial.print("Reading spectrometer for solar angle ");
+    Serial.println(angle);
     takeSpecReadings();
     
     Serial.print("Reading spectrometer with shadow bar (");
@@ -119,9 +116,9 @@ void loop() {
 
 float angleFromHorizon(DateTime &now) {
   int day_of_year = DAYS_OF_MONTHS[now.month()-1] + now.day();     // does not account for leap-years]
-  int B = (day_of_year-1)*(360/365);
-  int E = (229.2*(0.000075+0.001868*cos(B)-0.032077*sin(B)-0.014615*cos(2*B)-0.04089*sin(2*B)))/60; //eccentricity factor
-  int solartime = (now.hour()+now.minute()/60) + 4*(MERIDIAN-LONGITUDE)/60 + E; //correct assuming the clock does not account for daylight savings 
+  float B = (day_of_year-1)*(360/365);
+  float E = (229.2*(0.000075+0.001868*cos(B)-0.032077*sin(B)-0.014615*cos(2*B)-0.04089*sin(2*B)))/60; //eccentricity factor
+  float solartime = (now.hour()+now.minute()/60) + 4*(MERIDIAN-LONGITUDE)/60 + E; //correct assuming the clock does not account for daylight savings 
   int hourangle = (solartime-12)*15; //calculates the hour angle based on solar time 
   float declination = 0.40928 * sin(2*PI * (284+day_of_year)/365); // Equation 1.6.1 Solar Engineering of Thermal Processes
   // Equation 1.6.5
