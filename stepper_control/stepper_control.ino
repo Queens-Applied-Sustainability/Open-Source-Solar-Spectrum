@@ -84,7 +84,7 @@ void loop() {
     do {
       lastminute = time;
       now = RTC.now();
-      time = DEBUG ? (now.minute() % DEBUG) : now.minute();  // Show info and take readings for seconds and minutes when debugging (instead of minutes and hours when running)
+      time = DEBUG ? now.second() : now.minute(); // Show info and take readings for seconds and minutes when debugging (instead of minutes and hours when running)
     } while(lastminute == time); // Wait for the minute to change
     Serial.print(" "); Serial.print(time);
   } while (time != 0);  // Wait for minute 0 (once / hour)
@@ -116,14 +116,14 @@ void loop() {
 
 float angleFromHorizon(DateTime &now) {
   int day_of_year = DAYS_OF_MONTHS[now.month()-1] + now.day();     // does not account for leap-years]
-  float B = (day_of_year-1)*(360/365);
-  float E = (229.2*(0.000075+0.001868*cos(B)-0.032077*sin(B)-0.014615*cos(2*B)-0.04089*sin(2*B)))/60; //eccentricity factor
-  float solartime = (now.hour()+now.minute()/60) + 4*(MERIDIAN-LONGITUDE)/60 + E; //correct assuming the clock does not account for daylight savings 
-  int hourangle = (solartime-12)*15; //calculates the hour angle based on solar time 
-  float declination = 0.40928 * sin(2*PI * (284+day_of_year)/365); // Equation 1.6.1 Solar Engineering of Thermal Processes
+  float B = (day_of_year-1)*(360/365.0);
+  float E = (229.2*(0.000075+0.001868*cos(B)-0.032077*sin(B)-0.014615*cos(2*B)-0.04089*sin(2*B)))/60.0; //eccentricity factor
+  float solartime = (now.hour()+now.minute()/60.0) + 4*(MERIDIAN-LONGITUDE)/60.0 + E; //correct assuming the clock does not account for daylight savings 
+  float hourangle = (solartime-12)*15; //calculates the hour angle based on solar time 
+  float declination = 0.40928 * sin(2*PI * (284+day_of_year)/365.0); // Equation 1.6.1 Solar Engineering of Thermal Processes
   // Equation 1.6.5
-  float incidence = asin(cos(LATITUDE*PI/180)*cos(declination)*cos(hourangle) +
-                         sin(LATITUDE*PI/180)*sin(declination));
+  float incidence = acos(cos(LATITUDE*PI/180.0)*cos(declination)*cos(hourangle*PI/180.0) +
+                         sin(LATITUDE*PI/180.0)*sin(declination));
   if (DEBUG) {
     Serial.print("  y: "); Serial.print(now.year());
       Serial.print(" m: "); Serial.print(now.month());
@@ -141,7 +141,7 @@ float angleFromHorizon(DateTime &now) {
     Serial.print("  declination: "); Serial.println(declination);
     Serial.print("  incidence: "); Serial.println(incidence);
   }
-  return incidence*180/PI;
+  return 90-(incidence*180/PI);
 }
 
 void takeSpecReadings() {
