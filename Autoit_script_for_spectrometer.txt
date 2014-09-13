@@ -1,0 +1,49 @@
+.#include <GUIConstantsEx.au3>
+#include <Date.au3>
+#include <WindowsConstants.au3>
+
+; Under Vista the Windows API "SetSystemTime" may be rejected due to system security
+WinActivate("History Channel Functions")
+sleep(2000)
+send("!e")
+sleep(1000)
+
+$infFilePath="D:\Documents and Settings\rgauthier\Desktop\Spectrometer Dropbox\Dropbox\Dropbox Excel Data\Data\Infared"&@YEAR&"-"&@YDAY&"-"&@MON&"-"&@MDAY&"-"&@HOUR&"-"&@MIN&".xls"
+$visFilePath="D:\Documents and Settings\rgauthier\Desktop\Spectrometer Dropbox\Dropbox\Dropbox Excel Data\Data\Visible"&@YEAR&"-"&@YDAY&"-"&@MON&"-"&@MDAY&"-"&@HOUR&"-"&@MIN&".xls"
+
+Global Const $xlNormal = -4143 ;parameter to save as .xls
+Global Const $iAccessMode = 1
+Global Const $iConflictResolution = 2
+Global  $errcnt=0
+$sType = $xlNormal ;sets the filetype to save 
+
+$oExcel = ObjGet("", "Excel.Application")
+$errcnt=0
+For $element In $oExcel.Application.Workbooks 
+   
+   If $element.FullName = "Sheet1" Then 
+	  ;MsgBox(0,"",$element.FullName) 
+	  $element.SaveAs($infFilePath, $sType, Default, Default, Default, Default, $iAccessMode, $iConflictResolution)  
+	  $element.Close      
+   ElseIF 	$element.FullName = "Sheet2" Then   
+	  ;MsgBox(0,"",$element.FullName) 
+	  $element.SaveAs($visFilePath, $sType, Default, Default, Default, Default, $iAccessMode, $iConflictResolution)  
+	  $element.Close  
+   Else                 
+	  $element.Activate  
+		 $errcnt=$errcnt+1
+	  $errFilePath="D:\Documents and Settings\rgauthier\Desktop\Spectrometer Dropbox\Dropbox\Dropbox Excel Data\Data\Error"&@YEAR&"-"&@YDAY&"-"&@MON&"-"&@MDAY&"-"&@HOUR&"-"&@MIN&"-("&$errcnt&").xls"
+	  
+	   $element.SaveAs($errFilePath, $sType, Default, Default, Default, Default, $iAccessMode, $iConflictResolution)  
+	   sleep(500)
+	  $element.Close     
+   EndIf       
+Next 
+$oExcel.Application.Quit
+
+
+
+sleep(1000)
+WinActivate("AvaSoft")
+sleep(1000)
+send("!ahs")
